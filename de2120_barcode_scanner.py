@@ -221,7 +221,7 @@ class DE2120BarcodeScanner(object):
 
         # Let's try getting the firmware version
         # It takes ~430 ms to get firmware version response
-        if self.send_command(COMMAND_GET_VERSION, "", 800)  
+        if self.send_command(self.COMMAND_GET_VERSION, "", 800)  
             return True
 
         # If we failed, try again at the factory default of 115200 bps
@@ -231,7 +231,7 @@ class DE2120BarcodeScanner(object):
 
         # Go to 9600bps
         # 300 ms is too quick for module to switch to new setting
-        self.send_command(PROPERTY_BAUD_RATE, "5", 500)
+        self.send_command(self.PROPERTY_BAUD_RATE, "5", 500)
 
         # Return to 9600bps
         self.hard_port = serial.Serial("/dev/serial0/", 9600, timeout=1)
@@ -240,7 +240,7 @@ class DE2120BarcodeScanner(object):
 
         # Let's try getting the firmware version again
         # It takes ~430 ms to get firmware version response
-        if self.send_command(COMMAND_GET_VERION, "", 800)
+        if self.send_command(self.COMMAND_GET_VERION, "", 800)
             return True
         
         return False
@@ -260,7 +260,7 @@ class DE2120BarcodeScanner(object):
             otherwise.
             :rtype: bool
         """
-        return self.send_command(COMMAND_SET_DEFAULTS)
+        return self.send_command(self.COMMAND_SET_DEFAULTS)
     
     # --------------------------------------------------------
     # available()
@@ -316,10 +316,10 @@ class DE2120BarcodeScanner(object):
                 while self.hard_port.in_waiting():
                     incoming = self.hard_port.read()
 
-                    if incoming == DE2120_COMMAND_ACK:
+                    if incoming == self.DE2120_COMMAND_ACK:
                         return True
                     
-                    elif incoming == DE2120_COMMAND_NACK:
+                    elif incoming == self.DE2120_COMMAND_NACK:
                         return False
 
             time.sleep(0.001) 
@@ -370,4 +370,280 @@ class DE2120BarcodeScanner(object):
                 return False
         
         return False
+    
+    # -------------------------------------------------------
+    # change_baud_rate(baud)
+    #
+    # Change the serial baud rate for the barcode module
+    def change_baud_rate(self, baud):
+        """
+            Change the serial baud rate for the barcode module.
+            Default 115200
 
+            :param baud: baud rate to change to
+            :return: true if command is successfully send, false otherwise
+            :rtype: bool
+        """
+        # TODO: The following line is the C++ code of the arduino library,
+        # I have no idea what it does
+        # char arg[2] = {'0', '\0'};
+
+        if baud = 1200:
+            arg = '2'
+        elif baud = 2400:
+            arg = '3'
+        elif baud = 4800:
+            arg = '4'
+        elif baud = 9600:
+            arg = '5'
+        elif baud = 19200:
+            arg = '6'
+        elif baud = 38400:
+            arg = '7'
+        elif baud = 57600:
+            arg = '8'
+        elif baud = 115200:
+            arg = '9'
+
+        # Only change the baud rate if a valid value is passed
+        if arg != '0':
+            return self.send_command(self.PROPERTY_BAUD_RATE, arg)
+        
+        return False
+    
+    # --------------------------------------------------------
+    # change_buzzer_tone(tone)
+    #
+    # Change the beep frequency between low, med, and high
+    def change_buzzer_tone(self, tone):
+        """
+            Change the buzzer frequency between low, med, and high
+
+            :param tone: int that's 1 = low, 2 = med, 3 = high frequency
+            :return: true if command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        # Only change the frequency if a valid value is passes
+        if tone > 0 and tone < 4:
+            return self.send_command(self.PROPERTY_BUZZER_FREQ, tone)
+        return False
+    
+    # --------------------------------------------------------
+    # enable_decode_beep()
+    #
+    # Enable buzzer beep on successful read
+    def enable_decode_beep(self):
+        """
+            Enable beep on successful read
+
+            :return: true if command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_DECODE_BEEP, "1")
+    
+    # ---------------------------------------------------------
+    # disable_decode_beep()
+    #
+    # Disable buzzer beep on successful read
+    def disable_decode_beep(self):
+        """
+            Disable beep on successful read
+
+            :return: true if command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_DECODE_BEEP, "0")
+
+    # --------------------------------------------------------
+    # enable_boot_beep
+    #
+    # Enable buzzer beep on module startup
+    def enable_decode_beep(self):
+        """
+            Enable beep on module startup
+
+            :return: true if command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_BOOT_BEEP, "1")
+    
+    # --------------------------------------------------------
+    # disable_boot_beep
+    #
+    # Disable buzzer beep on module  startup
+    def disable_boot_beep(self):
+        """
+            Disable beep on module startup
+
+            :return: true if command successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_BOOT_BEEP, "0")
+    
+    # ---------------------------------------------------------
+    # light_on()
+    #
+    # Turn white illumination LED on
+    def light_on(self):
+        """
+            Turn white illumination LED on
+
+            :return: true if command successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_FLASH_LIGHT, "1")
+    
+    # ---------------------------------------------------------
+    # light_off()
+    #
+    # Turn white illumination LED off
+    def light_off(self):
+        """
+            Turn white illumination LED off
+
+            :return: true if command successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_FLASH_LIGHT, "0")
+        
+    # ---------------------------------------------------------
+    # reticle_on()
+    #
+    # Turn red scan line on
+    def reticle_on(self):
+        """
+            Turn red scan line on
+
+            :return: true if command successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_AIM_LIGHT, "1")
+    
+    # ---------------------------------------------------------
+    # reticle_off()
+    #
+    # Turn red scan line off
+    def reticle_off(self):
+        """
+            Turn red scan line off
+
+            :return true if command successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_AIM_LIGHT, "0")
+    
+    # ---------------------------------------------------------
+    # change_reading_area()
+    #
+    # Change the percentage of the frame to scan for barcodes
+    def change_reading_area(self, percent):
+        """
+            Change the percentage of the frame to scan for barcodes
+
+            :param percent: Percentage of frame to scan. Valid values
+                are 100, 80, 60, 40, 20 as stated in the DE2120 Scan
+                Setting Manual
+            :return: true if command successfully sent, false otherwise
+            :rtype: bool
+        """
+        if percent = 80:
+            arg = '1'
+        elif percent = 60:
+            arg = '2'
+        elif percent = 40:
+            arg = '3'
+        elif percent = 20:
+            arg = '4'
+        else:   # Default to scanning 100% of the area
+            arg = '0'
+        
+        # if arg != 0:
+        #     return self.send_command(self.PROPERTY_READING_AREA, arg)
+        
+        # return False
+        
+        # TODO: couldn't all of this just be
+        return self.send_command(self.PROPERTY_READING_AREA, arg)
+    
+    # ---------------------------------------------------------
+    # enable_image_flipping()
+    #
+    # Enable mirror image reading as defined in the DE2120 Settings Manual
+    def enable_image_flipping(self):
+        """
+            Enable mirror image reading
+
+            :return: true if the command successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_MIRROR_FLIP, "1")
+    
+    # --------------------------------------------------------
+    # disable_image_flipping()
+    #
+    # Disable mirror image reading as defined in the DE2120 Settings Manual
+    def disable_image_flipping(self):
+        """
+            Disable mirror image reading
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_MIRROR_FLIP, "0")
+    
+    # ---------------------------------------------------------
+    # USB_mode(mode)
+    #
+    # Enable USB communication and set the mode
+    # THIS WILL MAKE THE MODULE UNRESPONSIVE ON TTL
+    def USB_mode(self, mode):
+        """
+            Enable USB communication and set the mode. THIS WILL
+            MAKE THE MODULE UNRESPONSIVE ON TTL
+
+            :param mode: string defining what USB mode to set the 
+                module in. Valid arguments are "KBD", "HID", "VIC".
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        if mode == "KBD" or mode == "HID" or mode == "VIC":
+            return self.send_command(self.PROPERTY_COMM_MODE, mode)
+        
+        return False
+    
+    # ----------------------------------------------------------
+    # enable_continuous_read(repeat_interval)
+    #
+    # Enable continuous reading mode and set the interval for same-code reads
+    def enable_continuous_read(self, repeat_interval):
+        """
+            Enable continuous reading of barcodes and set the time
+            interval for same-code reads
+
+            :param repeat_interval: int parameter.
+                0: same code output 1 times
+                1: continuous output with same code without interval
+                2: continuous output with same code, 0.5 second interval
+                3: continuous output with same code, 1 second interval
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        if repeat_interval < 4 and repeat_interval >= 0:
+            self.send_command(self.PROPERTY_READING_MODE, "CNT")
+            return self.send_command(self.PROPERTY_CONTINUOUS_MODE_INTERVAL, repeat_interval)
+        
+        return False
+    
+    # ---------------------------------------------------------
+    # disable_continuous_read()
+    #
+    # Disable continuous reading mode
+    def disable_continuous_read(self):
+        """
+            Disable continuous reading of barcodes.
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_READING_MODE, "MAN")
+    
