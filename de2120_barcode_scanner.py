@@ -647,3 +647,119 @@ class DE2120BarcodeScanner(object):
         """
         return self.send_command(self.PROPERTY_READING_MODE, "MAN")
     
+    # ---------------------------------------------------------
+    # enable_motion_sense(sensitivity)
+    #
+    # Enable the motion sensitive read mode.
+    def enable_motion_sense(self, sensitivity):
+        """
+            Enable the motion sensitive read mode and set sensitivity level
+
+            :param sensitivity: int value. The smaller the sensitivity, the
+                more sensitive. Values are taken from the DE2120 settings manual.
+                Valid arguments are: 15 (very high), 20 (high), 30 (little high), 
+                50 (general/default), 100 (low sensitivity)
+            :return: true if command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        # Reject invalid sensitivity values
+        if sensitivity == 15 or sensitivity == 20 or sensitivity == 30 or sensitivity == 50 or sensitivity == 100:
+            sense = str(sensitivity)
+
+            self.send_command(self.PROPERTY_READING_MODE, "MDH")
+            return self.send_command(self.PROPERTY_COMM_MODE, sense)
+
+        return False
+
+    # ---------------------------------------------------------
+    # disable_motion_sense()
+    # 
+    # Disable the motion sensitive read mode.
+    def disable_motion_sense(self):
+        """
+            Disable the motioin sensitive read mode.
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_READING_MODE, "MAN")
+
+    # ---------------------------------------------------------
+    # enable_all_1D()
+    # 
+    # Enable decoding of all 1D symbologies
+    def enable_all_1D(self):
+        """
+            Enable decoding of all 1D symbologies
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_ENABLE_ALL_1D)
+    
+    # ---------------------------------------------------------
+    # disable_all_1D()
+    #
+    # Disable decoding of all 1D symbologies
+    def disable_all_1D(self):
+        """
+            Disable decoding of all 1D symbologies
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_DISABLE_ALL_1D)
+
+    # ---------------------------------------------------------
+    # enable_all_2D()
+    #
+    # Enable decoding of all 2D symbologies
+    def enable_all_2D(self):
+        """
+            Enable decoding of all 2D symbologies
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_ENABLE_ALL_2D)
+    
+    # --------------------------------------------------------
+    # disable_all_2D()
+    #
+    # Disable decoding of all 2D symbologies
+    def disable_all_2D(self):
+        """
+            Disable decoding of all 2D symbologies
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.PROPERTY_DISABLE_ALL_2D)
+    
+    # ---------------------------------------------------------
+    # start_scan()
+    # 
+    # Start reading when in trigger mode (default)
+    def start_scan(self):
+        """
+            Start reading when in trigger mode (default)
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.COMMAND_START_SCAN)
+    
+    # ----------------------------------------------------------
+    # stop_scan()
+    #
+    # Stop reading when in trigger mode. Module will automatically
+    # stop reading after a few seconds
+    def stop_scan(self):
+        """
+            Stop reading when in trigger mode. Module will
+            automatically stop reading after a few seconds
+
+            :return: true if the command is successfully sent, false otherwise
+            :rtype: bool
+        """
+        return self.send_command(self.COMMAND_STOP_SCAN)
