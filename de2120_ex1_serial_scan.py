@@ -68,7 +68,7 @@ def run_example():
 
         if my_scanner.read_barcode(scan_buffer, BUFFER_LEN):
             print("\nCode found: ")
-            for i in range(0, len(scan_buffer):
+            for i in range(0, len(scan_buffer)):
                 print(scan_buffer[i])
             print("\n")
         
@@ -77,6 +77,6 @@ def run_example():
 if __name__ == '__main__':
     try:
         run_example()
-    except(KeyboarInterrupt, SystemExit) as exErr:
+    except(KeyboardInterrupt, SystemExit) as exErr:
         print("\nEnding Example 1")
         sys.exit(0)

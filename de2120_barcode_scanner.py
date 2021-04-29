@@ -68,7 +68,7 @@ class DE2120BarcodeScanner(object):
     # Need to prepend "^_^" and append "."
     COMMAND_START_SCAN = "SCAN"
     COMMAND_STOP_SCAN = "SLEEP"
-    COMMAND_SET_DEFAULTS = "DEFALT
+    COMMAND_SET_DEFAULTS = "DEFALT"
     COMMAND_GET_VERSION = "DSPYFW"
 
     PROPERTY_BUZZER_FREQ = "BEPPWM"
@@ -176,8 +176,8 @@ class DE2120BarcodeScanner(object):
     def __init__(self, hard_port = None):
         if hard_port is None:
             # TODO: need to check if this is correct
-            self.hard_port = serial.Serial("/dev/serial0/", 9600, timeout=1)
-            # self.hard_port = serial.Serial("/dev/ttyS0", 9600, timeout=1)
+            #self.hard_port = serial.Serial("/dev/serial0/", 9600, timeout=1)
+            self.hard_port = serial.Serial("/dev/ttyS0", 9600, timeout=1)
         else:
             self.hard_port = hard_port
     
@@ -221,11 +221,11 @@ class DE2120BarcodeScanner(object):
 
         # Let's try getting the firmware version
         # It takes ~430 ms to get firmware version response
-        if self.send_command(self.COMMAND_GET_VERSION, "", 800)  
+        if self.send_command(self.COMMAND_GET_VERSION, "", 800):  
             return True
 
         # If we failed, try again at the factory default of 115200 bps
-        self.hard_port = serial.Serial("/dev/serial0/", 115200, timeout=1)
+        self.hard_port = serial.Serial("/dev/ttyS0", 9600, timeout=1)
 
         time.sleep(0.01)
 
@@ -234,13 +234,13 @@ class DE2120BarcodeScanner(object):
         self.send_command(self.PROPERTY_BAUD_RATE, "5", 500)
 
         # Return to 9600bps
-        self.hard_port = serial.Serial("/dev/serial0/", 9600, timeout=1)
+        self.hard_port = serial.Serial("/dev/ttyS0", 9600, timeout=1)
 
         time.sleep(0.01)
 
         # Let's try getting the firmware version again
         # It takes ~430 ms to get firmware version response
-        if self.send_command(self.COMMAND_GET_VERION, "", 800)
+        if self.send_command(self.COMMAND_GET_VERSION, "", 800):
             return True
         
         return False
@@ -271,7 +271,7 @@ class DE2120BarcodeScanner(object):
             :return: the number of bytes in the serial receive buffer
             :rtype: int
         """
-        return self.hard_port.in_waiting()
+        return self.hard_port.in_waiting
 
     # --------------------------------------------------------
     # read()
@@ -311,9 +311,9 @@ class DE2120BarcodeScanner(object):
 
         while (time.time() * 1000 < timeout):
 
-            if self.hard_port.in_waiting():
+            if self.hard_port.in_waiting:
 
-                while self.hard_port.in_waiting():
+                while self.hard_port.in_waiting:
                     incoming = self.hard_port.read()
 
                     if incoming == self.DE2120_COMMAND_ACK:
@@ -331,7 +331,7 @@ class DE2120BarcodeScanner(object):
     #
     # Check the receive buffer for serial data from the barcode 
     # scanner.
-    def read_barcode(self, result_buffer, size)
+    def read_barcode(self, result_buffer, size):
         """
             Check the receive buffer for a CR (marks a complete scan).
             If a CR is found, we overwrite the result_buffer until it's
@@ -344,7 +344,7 @@ class DE2120BarcodeScanner(object):
             :rtype: bool
         """
         # Check if there's data available
-        if self.hard_port.in_waiting() == False:
+        if self.hard_port.in_waiting == False:
             return False
 
         cr_found = False
@@ -359,14 +359,14 @@ class DE2120BarcodeScanner(object):
         
         for idx in (len(result_buffer), size):
 
-            if self.hard_port.in_waiting():
+            if self.hard_port.in_waiting:
                 result_buffer[idx] = self.hard_port.read()
             
                 if result_buffer[idx] == '\r': 
                     result_buffer[idx+1] = '\0'
                     return True
             
-            else
+            else:
                 return False
         
         return False
@@ -388,21 +388,21 @@ class DE2120BarcodeScanner(object):
         # I have no idea what it does
         # char arg[2] = {'0', '\0'};
 
-        if baud = 1200:
+        if baud == 1200:
             arg = '2'
-        elif baud = 2400:
+        elif baud == 2400:
             arg = '3'
-        elif baud = 4800:
+        elif baud == 4800:
             arg = '4'
-        elif baud = 9600:
+        elif baud == 9600:
             arg = '5'
-        elif baud = 19200:
+        elif baud == 19200:
             arg = '6'
-        elif baud = 38400:
+        elif baud == 38400:
             arg = '7'
-        elif baud = 57600:
+        elif baud == 57600:
             arg = '8'
-        elif baud = 115200:
+        elif baud == 115200:
             arg = '9'
 
         # Only change the baud rate if a valid value is passed
@@ -546,13 +546,13 @@ class DE2120BarcodeScanner(object):
             :return: true if command successfully sent, false otherwise
             :rtype: bool
         """
-        if percent = 80:
+        if percent == 80:
             arg = '1'
-        elif percent = 60:
+        elif percent == 60:
             arg = '2'
-        elif percent = 40:
+        elif percent == 40:
             arg = '3'
-        elif percent = 20:
+        elif percent == 20:
             arg = '4'
         else:   # Default to scanning 100% of the area
             arg = '0'
