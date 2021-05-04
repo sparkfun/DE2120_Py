@@ -8,17 +8,12 @@
 # This example demonstrates how to get the scanner connected and will output
 # and barcode it sees.
 # 
-# NOTE: you must put the module into TTL mode by scanning the POR232 barcode 
+# NOTE: you must put the module into COM mode by scanning the PORVIC barcode 
 # in the datasheet. This will put the module in the correct mode to receive 
-# and transmit serial. This package will automatically set the baud rate to 9600 bps.
+# and transmit serial.
 #
-# This package has been developed on a Raspberry Pi 3. To connect:
-#
-# (Raspberry Pi pin) = (Scanner pin)
-# GPIO 14 (TXD) = RX pin
-# GPIO 15 (RXD) = TX pin
-# GND = GND
-# 3.3V = 3.3V
+# This package has been developed on a Raspberry Pi 4. Connect the DE2120 Barcode
+# Scanner Breakout directly to your Pi using a USB-C cable
 #  
 # Do you like this library? Help support SparkFun. Buy a board!
 #

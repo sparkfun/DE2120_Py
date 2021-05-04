@@ -2,7 +2,7 @@
 # de2120_barcode_scanner.py
 #
 # Python library for the SparkFun 2D Barcode Scanner Breakout.
-#   TODO: (check) https://www.sparkfun.com/products/15932
+# https://www.sparkfun.com/products/18088
 #
 #------------------------------------------------------------------------
 # Written by Priyanka Makin @ SparkFun Electronics, April 2021
@@ -175,9 +175,6 @@ class DE2120BarcodeScanner(object):
     # Constructor
     def __init__(self, hard_port = None):
         if hard_port is None:
-            # TODO: need to check if this is correct
-            #self.hard_port = serial.Serial("/dev/serial0/", 9600, timeout=1)
-            #self.hard_port = serial.Serial("/dev/ttyS0", 115200, timeout=1)
             self.hard_port = serial.Serial("/dev/ttyACM0", 115200, timeout=1)
         else:
             self.hard_port = hard_port
@@ -195,9 +192,6 @@ class DE2120BarcodeScanner(object):
             :return: Returns true if initialization was successful
             :rtype: bool
         """
-        # Debug
-        print("\nHello, I'm in begin()")
-        
         if self.is_connected() == False:
             return False
         
@@ -220,10 +214,7 @@ class DE2120BarcodeScanner(object):
             :return: Returns true if the DE2120 responds with an ACK.
             Retruns false otherwise.
             :rtype: bool
-        """
-        # Debug
-        print("\nHello, I'm in is_connected()")
-        
+        """     
         # Try sending the firmware version command
         write_string = "^_^" + chr(4) + "SPYFW."
         self.hard_port.write(write_string.encode())
@@ -282,66 +273,32 @@ class DE2120BarcodeScanner(object):
     # send_command(cmd, arg, max_wait_in_ms)
     #
     # Construct a command/parameter and send it to the module.
-    def send_command(self, cmd, arg = "", max_wait_in_ms = 3000):
+    def send_command(self, cmd, arg = ""):
         """
             Create command string and send to DE2120 over serial 
             port. Check serial buffer for a response
 
             :param cmd: The command name
             :param arg: The command variation, if there is one
-            :param max_wait_in_ms: Maximum time to wait for ACK/NACK
             :return: True if the response from DE2120 contains the 
             ACK character, false otherwise.
             :rtype: bool
         """
-        # Debug
-        print("\nHello, I'm in send_command()")
-        
         start = '^_^'
         end = '.'
 
         command_string = start + cmd + arg + end
         
-        # Debug
-        print("\nThis is the command_string: " + command_string)
-        
         # Use encode() to turn string into bytes
         self.hard_port.write(command_string.encode())
         
         incoming = self.hard_port.read()
-        # Debug
-        print("\nIncoming: " + str(ord(incoming)))
 	
         if ord(incoming) == 0x06:
-            print("\nACK'd")
             return True
         elif ord(incoming) == 0x15:
-            print("\nNACK'd")
             return False
 
-        # timeout = (time.time() * 1000) + max_wait_in_ms
-
-        # while (time.time() * 1000 < timeout):
-            
-            # if self.hard_port.out_waiting:
-                
-                # # Debug
-                # print("\nOut_waiting")
-                
-                # while self.hard_port.out_waiting:
-                    # incoming = self.hard_port.read()
-                    
-                    # # Debug
-                    # print("\nIncoming: " + str(ord(incoming)))
-                    
-                    # if incoming == self.DE2120_COMMAND_ACK:
-                        # return True
-                    
-                    # elif incoming == self.DE2120_COMMAND_NACK:
-                        # return False
-
-            # time.sleep(0.001) 
-        
         return False
     
     # --------------------------------------------------------
@@ -351,11 +308,9 @@ class DE2120BarcodeScanner(object):
     # scanner.
     def read_barcode(self):
         """
-            Check the receive buffer for a CR (marks a complete scan).
-            If a CR is found, we overwrite the result_buffer until it's
-            either full or we reach a CR in the receive buffer
+            Read from the serial buffer until we hit a new line character
 
-            :return: true if NULL character found in barcode, false other
+            :return: the string in the serial buffer
             :rtype: bool
         """
         # Check if there's data available
@@ -377,13 +332,9 @@ class DE2120BarcodeScanner(object):
             Default 115200
 
             :param baud: baud rate to change to
-            :return: true if command is successfully send, false otherwise
+            :return: true if command is successfully sent, false otherwise
             :rtype: bool
         """
-        # TODO: The following line is the C++ code of the arduino library,
-        # I have no idea what it does
-        # char arg[2] = {'0', '\0'};
-
         if baud == 1200:
             arg = '2'
         elif baud == 2400:
@@ -398,14 +349,10 @@ class DE2120BarcodeScanner(object):
             arg = '7'
         elif baud == 57600:
             arg = '8'
-        elif baud == 115200:
+        else:   # Default at 115200 bps
             arg = '9'
 
-        # Only change the baud rate if a valid value is passed
-        if arg != '0':
-            return self.send_command(self.PROPERTY_BAUD_RATE, arg)
-        
-        return False
+        return self.send_command(self.PROPERTY_BAUD_RATE, arg)
     
     # --------------------------------------------------------
     # change_buzzer_tone(tone)
@@ -552,13 +499,7 @@ class DE2120BarcodeScanner(object):
             arg = '4'
         else:   # Default to scanning 100% of the area
             arg = '0'
-        
-        # if arg != 0:
-        #     return self.send_command(self.PROPERTY_READING_AREA, arg)
-        
-        # return False
-        
-        # TODO: couldn't all of this just be
+            
         return self.send_command(self.PROPERTY_READING_AREA, arg)
     
     # ---------------------------------------------------------

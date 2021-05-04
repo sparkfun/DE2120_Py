@@ -5,20 +5,14 @@
 #
 # Written by Priyanka Makin @ SparkFun Electronics, April 2021
 #
-# This example demonstrates how to get the scanner connected and will output
-# and barcode it sees.
+# This example demonstrates how to configure the settings of the DE2120 Breakout
 # 
-# NOTE: you must put the module into TTL mode by scanning the POR232 barcode 
+# NOTE: you must put the module into COM mode by scanning the PORVIC barcode 
 # in the datasheet. This will put the module in the correct mode to receive 
-# and transmit serial. This package will automatically set the baud rate to 9600 bps.
+# and transmit serial.
 #
-# This package has been developed on a Raspberry Pi 3. To connect:
-#
-# (Raspberry Pi pin) = (Scanner pin)
-# GPIO 14 (TXD) = RX pin
-# GPIO 15 (RXD) = TX pin
-# GND = GND
-# 3.3V = 3.3V
+# This package has been developed on a Raspberry Pi 4. Connect the DE2120 Barcode
+# Scanner Breakout directly to your Pi using a USB-C cable
 #  
 # Do you like this library? Help support SparkFun. Buy a board!
 #
@@ -51,11 +45,7 @@ import time
 import sys
 import serial
 
-# TODO: do i even need the flush_rx() function?!
-
 def flash_light(bar_scanner):
-    # flush_rx()  # Clear the serial rx buffer to avoid line endings
-
     print("\n")
     print("\n------------------------------------------------")
     print("\n1) Enable flash light")
@@ -73,9 +63,7 @@ def flash_light(bar_scanner):
     else:
         print("\nCommand not recognized")
 
-def reticle(bar_scanner):
-    # flush_rx()  # Clear the serial rx buffer to avoid line endings
-    
+def reticle(bar_scanner):    
     print("\n")
     print("\n------------------------------------------------")
     print("\n1) Enable reticle")
@@ -163,8 +151,6 @@ def image_flip(bar_scanner):
     else:
         print("\nCommand not recognized")
 def reading_area(bar_scanner):
-    # flush_rx()  # Clear the serial rx buffer ot avoid line endings
-
     print("\n")
     print("\n------------------------------------------------")
     print("\n1) Full width (default)")
@@ -195,8 +181,6 @@ def reading_area(bar_scanner):
         print("\nCommand not recognized")
 
 def reading_mode(bar_scanner):
-    # flush_rx()  # Clear the serial rx buffer
-
     print("\n")
     print("\n------------------------------------------------")
     print("\n1) Manual read mode (default)")
@@ -219,8 +203,6 @@ def reading_mode(bar_scanner):
         print("\nCommand not recognized")
 
 def symbologies(bar_scanner):
-    # flush_rx()  # Clear the rx buffer to avoid line endings
-
     print("\n")
     print("\n------------------------------------------------")
     print("\n1) Enable all 1D symbologies")
@@ -258,8 +240,6 @@ def run_example():
     print("\nScanner ready!")
 
     while True:
-
-        #flush_rx()  # Clear the serial rx buffer to avoid line endings
         
         print("\n")
         print("\nSparkFun DE2120 Barcode Scanner Python Package")
