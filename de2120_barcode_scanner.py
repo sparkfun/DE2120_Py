@@ -177,7 +177,8 @@ class DE2120BarcodeScanner(object):
         if hard_port is None:
             # TODO: need to check if this is correct
             #self.hard_port = serial.Serial("/dev/serial0/", 9600, timeout=1)
-            self.hard_port = serial.Serial("/dev/ttyS0", 9600, timeout=1)
+            #self.hard_port = serial.Serial("/dev/ttyS0", 115200, timeout=1)
+            self.hard_port = serial.Serial("/dev/ttyACM0", 115200, timeout=1)
         else:
             self.hard_port = hard_port
     
@@ -194,6 +195,9 @@ class DE2120BarcodeScanner(object):
             :return: Returns true if initialization was successful
             :rtype: bool
         """
+        # Debug
+        print("\nHello, I'm in begin()")
+        
         if self.is_connected() == False:
             return False
         
@@ -217,40 +221,30 @@ class DE2120BarcodeScanner(object):
             Retruns false otherwise.
             :rtype: bool
         """
-        # So, we've already opened the port at a baude rate of 9600
-
-        # Let's try getting the firmware version
-        # It takes ~430 ms to get firmware version response
-        if self.send_command(self.COMMAND_GET_VERSION, "", 800):  
-            return True
-
-        # If we failed, try again at the factory default of 115200 bps
-        self.hard_port = serial.Serial("/dev/ttyS0", 9600, timeout=1)
-
-        time.sleep(0.01)
-
-        # Go to 9600bps
-        # 300 ms is too quick for module to switch to new setting
-        self.send_command(self.PROPERTY_BAUD_RATE, "5", 500)
-
-        # Return to 9600bps
-        self.hard_port = serial.Serial("/dev/ttyS0", 9600, timeout=1)
-
-        time.sleep(0.01)
-
-        # Let's try getting the firmware version again
-        # It takes ~430 ms to get firmware version response
-        if self.send_command(self.COMMAND_GET_VERSION, "", 800):
-            return True
+        # Debug
+        print("\nHello, I'm in is_connected()")
         
-        return False
+        # Try sending the firmware version command
+        write_string = "^_^" + chr(4) + "SPYFW."
+        self.hard_port.write(write_string.encode())
+        
+        # Now, look for module response
+        # If it's an ACK, return true
+        # Otherwise, return false
+        incoming = self.hard_port.read()
+        if ord(incoming) == 0x06:   # ACK
+            return True
+        elif ord(incoming) == 0x15:  # NACK
+            return False
+        else:
+            return False
     
     # ---------------------------------------------------------
     # factory_default()
     # 
     # Returns the DE2120 to factory default settings. This will 
     # disconnect the module from the serial port
-    def factory_defaul(self):
+    def factory_default(self):
         """
             Send command to put the module back into facory default
             settings. This will disconnect the module from the serial
@@ -300,29 +294,53 @@ class DE2120BarcodeScanner(object):
             ACK character, false otherwise.
             :rtype: bool
         """
+        # Debug
+        print("\nHello, I'm in send_command()")
+        
         start = '^_^'
         end = '.'
 
         command_string = start + cmd + arg + end
+        
+        # Debug
+        print("\nThis is the command_string: " + command_string)
+        
         # Use encode() to turn string into bytes
         self.hard_port.write(command_string.encode())
+        
+        incoming = self.hard_port.read()
+        # Debug
+        print("\nIncoming: " + str(ord(incoming)))
+	
+        if ord(incoming) == 0x06:
+            print("\nACK'd")
+            return True
+        elif ord(incoming) == 0x15:
+            print("\nNACK'd")
+            return False
 
-        timeout = (time.time() * 1000) + max_wait_in_ms
+        # timeout = (time.time() * 1000) + max_wait_in_ms
 
-        while (time.time() * 1000 < timeout):
-
-            if self.hard_port.in_waiting:
-
-                while self.hard_port.in_waiting:
-                    incoming = self.hard_port.read()
-
-                    if incoming == self.DE2120_COMMAND_ACK:
-                        return True
+        # while (time.time() * 1000 < timeout):
+            
+            # if self.hard_port.out_waiting:
+                
+                # # Debug
+                # print("\nOut_waiting")
+                
+                # while self.hard_port.out_waiting:
+                    # incoming = self.hard_port.read()
                     
-                    elif incoming == self.DE2120_COMMAND_NACK:
-                        return False
+                    # # Debug
+                    # print("\nIncoming: " + str(ord(incoming)))
+                    
+                    # if incoming == self.DE2120_COMMAND_ACK:
+                        # return True
+                    
+                    # elif incoming == self.DE2120_COMMAND_NACK:
+                        # return False
 
-            time.sleep(0.001) 
+            # time.sleep(0.001) 
         
         return False
     
@@ -331,45 +349,23 @@ class DE2120BarcodeScanner(object):
     #
     # Check the receive buffer for serial data from the barcode 
     # scanner.
-    def read_barcode(self, result_buffer, size):
+    def read_barcode(self):
         """
             Check the receive buffer for a CR (marks a complete scan).
             If a CR is found, we overwrite the result_buffer until it's
             either full or we reach a CR in the receive buffer
 
-            :param result_buffer: list that stores the barcode read from
-                serial port
-            :param size: size of the result_buffer
             :return: true if NULL character found in barcode, false other
             :rtype: bool
         """
         # Check if there's data available
         if self.hard_port.in_waiting == False:
             return False
-
-        cr_found = False
-
-        for idx in (0, size):
-
-            if result_buffer[idx] == '\r':
-                cr_found = True
         
-        if cr_found:
-            result_buffer[0] = '\0'
+        # Read from serial port
+        incoming = self.hard_port.read_until()
         
-        for idx in (len(result_buffer), size):
-
-            if self.hard_port.in_waiting:
-                result_buffer[idx] = self.hard_port.read()
-            
-                if result_buffer[idx] == '\r': 
-                    result_buffer[idx+1] = '\0'
-                    return True
-            
-            else:
-                return False
-        
-        return False
+        return incoming.decode()
     
     # -------------------------------------------------------
     # change_baud_rate(baud)
@@ -425,7 +421,7 @@ class DE2120BarcodeScanner(object):
         """
         # Only change the frequency if a valid value is passes
         if tone > 0 and tone < 4:
-            return self.send_command(self.PROPERTY_BUZZER_FREQ, tone)
+            return self.send_command(self.PROPERTY_BUZZER_FREQ, str(tone))
         return False
     
     # --------------------------------------------------------
@@ -458,7 +454,7 @@ class DE2120BarcodeScanner(object):
     # enable_boot_beep
     #
     # Enable buzzer beep on module startup
-    def enable_decode_beep(self):
+    def enable_boot_beep(self):
         """
             Enable beep on module startup
 
@@ -599,14 +595,14 @@ class DE2120BarcodeScanner(object):
     def USB_mode(self, mode):
         """
             Enable USB communication and set the mode. THIS WILL
-            MAKE THE MODULE UNRESPONSIVE ON TTL
+            MAKE THE MODULE UNRESPONSIVE ON COM PORT
 
             :param mode: string defining what USB mode to set the 
-                module in. Valid arguments are "KBD", "HID", "VIC".
+                module in. Valid arguments are "KBD", "HID", "232".
             :return: true if the command is successfully sent, false otherwise
             :rtype: bool
         """
-        if mode == "KBD" or mode == "HID" or mode == "VIC":
+        if mode == "KBD" or mode == "HID" or mode == "232":
             return self.send_command(self.PROPERTY_COMM_MODE, mode)
         
         return False
@@ -615,7 +611,7 @@ class DE2120BarcodeScanner(object):
     # enable_continuous_read(repeat_interval)
     #
     # Enable continuous reading mode and set the interval for same-code reads
-    def enable_continuous_read(self, repeat_interval):
+    def enable_continuous_read(self, repeat_interval = 2):
         """
             Enable continuous reading of barcodes and set the time
             interval for same-code reads
@@ -623,42 +619,33 @@ class DE2120BarcodeScanner(object):
             :param repeat_interval: int parameter.
                 0: same code output 1 times
                 1: continuous output with same code without interval
-                2: continuous output with same code, 0.5 second interval
+                2: continuous output with same code, 0.5 second interval (default)
                 3: continuous output with same code, 1 second interval
             :return: true if the command is successfully sent, false otherwise
             :rtype: bool
         """
         if repeat_interval < 4 and repeat_interval >= 0:
             self.send_command(self.PROPERTY_READING_MODE, "CNT")
-            return self.send_command(self.PROPERTY_CONTINUOUS_MODE_INTERVAL, repeat_interval)
+            
+            # Wait for command to take effect
+            time.sleep(0.01)
+            
+            return self.send_command(self.PROPERTY_CONTINUOUS_MODE_INTERVAL, str(repeat_interval))
         
         return False
-    
-    # ---------------------------------------------------------
-    # disable_continuous_read()
-    #
-    # Disable continuous reading mode
-    def disable_continuous_read(self):
-        """
-            Disable continuous reading of barcodes.
-
-            :return: true if the command is successfully sent, false otherwise
-            :rtype: bool
-        """
-        return self.send_command(self.PROPERTY_READING_MODE, "MAN")
     
     # ---------------------------------------------------------
     # enable_motion_sense(sensitivity)
     #
     # Enable the motion sensitive read mode.
-    def enable_motion_sense(self, sensitivity):
+    def enable_motion_sense(self, sensitivity = 20):
         """
             Enable the motion sensitive read mode and set sensitivity level
 
             :param sensitivity: int value. The smaller the sensitivity, the
                 more sensitive. Values are taken from the DE2120 settings manual.
-                Valid arguments are: 15 (very high), 20 (high), 30 (little high), 
-                50 (general/default), 100 (low sensitivity)
+                Valid arguments are: 15 (very high), 20 (high/default), 30 (little high), 
+                50 (general), 100 (low sensitivity)
             :return: true if command is successfully sent, false otherwise
             :rtype: bool
         """
@@ -667,17 +654,23 @@ class DE2120BarcodeScanner(object):
             sense = str(sensitivity)
 
             self.send_command(self.PROPERTY_READING_MODE, "MDH")
+            
+            # Wait for command to take effect
+            time.sleep(0.01)
+            
             return self.send_command(self.PROPERTY_COMM_MODE, sense)
 
         return False
 
     # ---------------------------------------------------------
-    # disable_motion_sense()
+    # enable_manual_trigger()
     # 
-    # Disable the motion sensitive read mode.
-    def disable_motion_sense(self):
+    # Disable the motion sensitive and continuous read mode.
+    # Return to the default trigger mode.
+    def enable_manual_trigger(self):
         """
-            Disable the motioin sensitive read mode.
+            Disable the motioin sensitive and continuous read mode.
+            Return to the default trigger mode.
 
             :return: true if the command is successfully sent, false otherwise
             :rtype: bool

@@ -53,7 +53,7 @@ import serial
 
 # TODO: do i even need the flush_rx() function?!
 
-def flash_light():
+def flash_light(bar_scanner):
     # flush_rx()  # Clear the serial rx buffer to avoid line endings
 
     print("\n")
@@ -66,14 +66,14 @@ def flash_light():
 
     if val == '1':
         print("\nWhite scan light on")
-        my_scanner.light_on()
+        bar_scanner.light_on()
     elif val == '2':
         print("\nWhite scan light off")
-        my_scanner.light_off()
+        bar_scanner.light_off()
     else:
         print("\nCommand not recognized")
 
-def reticle():
+def reticle(bar_scanner):
     # flush_rx()  # Clear the serial rx buffer to avoid line endings
     
     print("\n")
@@ -86,14 +86,83 @@ def reticle():
 
     if val == '1':
         print("\nRed scan reticle on")
-        my_scanner.reticle_on()
+        bar_scanner.reticle_on()
     elif val == '2':
         print("\nRed scan reticle off")
-        my_scanner.reticle_off()
+        bar_scanner.reticle_off()
     else:
         print("\nCommand not recognized")
     
-def reading_area():
+def decode_beep(bar_scanner):
+    print("\n")
+    print("\n------------------------------------------------")
+    print("\n1) Enable decode beep")
+    print("\n2) Disable decode beep")
+    print("\n------------------------------------------------")
+    
+    val = input("\nSelect an option number: ")
+
+    if val == '1':
+        print("\nDecode beep turned on")
+        bar_scanner.enable_decode_beep()
+    elif val == '2':
+        print("\nDecode beep turned off")
+        bar_scanner.disable_decode_beep()
+    else:
+        print("\nCommand not recognized")
+        
+def boot_beep(bar_scanner):
+    print("\n")
+    print("\n------------------------------------------------")
+    print("\n1) Enable beep on module power on")
+    print("\n2) Disable beep on module power off")
+    print("\n------------------------------------------------")
+    
+    val = input("\nSelect an option number: ")
+    
+    if val == '1':
+        print("\nBeep on power on enabled")
+        bar_scanner.enable_boot_beep()
+    elif val == '2':
+        print("\nBeep on power on disabled")
+        bar_scanner.disable_boot_beep()
+    else:
+        print("\nCommand not recognized")
+        
+def change_buzz_freq(bar_scanner):
+    print("\n")
+    print("\n------------------------------------------------")
+    print("\n1) Passive low frequency")
+    print("\n2) Passive medium frequency")
+    print("\n3) Passive high frequency")
+    
+    val = input("\nSelect an option number: ")
+    
+    if val == '1':
+        bar_scanner.change_buzzer_tone(int(val))
+    elif val == '2':
+        bar_scanner.change_buzzer_tone(int(val))
+    elif val == '3':
+        bar_scanner.change_buzzer_tone(int(val))
+    else:
+        print("\nCommand not recognized")
+
+def image_flip(bar_scanner):
+    print("\n")
+    print("\n------------------------------------------------")
+    print("\n1) Turn on image flipping")
+    print("\n2) Turn off image flipping (default)")
+    print("\n------------------------------------------------")
+    
+    val = input("\nSelect an option number: ")
+    
+    if val == '1':
+        bar_scanner.enable_image_flipping()
+    elif val == '2':
+        bar_scanner.disable_image_flipping()
+    else:
+        print("\nCommand not recognized")
+def reading_area(bar_scanner):
     # flush_rx()  # Clear the serial rx buffer ot avoid line endings
 
     print("\n")
@@ -109,23 +178,23 @@ def reading_area():
 
     if val == '1':
         print("\nScanning 100% of frame")
-        my_scanner.change_reading_area(100)
+        bar_scanner.change_reading_area(100)
     elif val == '2':
         print("\nScanning center 80% of frame")
-        my_scanner.change_reading_area(80)
+        bar_scanner.change_reading_area(80)
     elif val == '3':
         print("\nScanning center 60% of frame")
-        my_scanner.change_reading_area(60)
+        bar_scanner.change_reading_area(60)
     elif val == '4':
         print("\nScanning center 40% of frame")
-        my_scanner.change_reading_area(40)
+        bar_scanner.change_reading_area(40)
     elif val == '5':
         print("\nScanning center 20% of frame")
-        my_scanner.change_reading_area(202)
+        bar_scanner.change_reading_area(20)
     else:
         print("\nCommand not recognized")
 
-def reading_mode():
+def reading_mode(bar_scanner):
     # flush_rx()  # Clear the serial rx buffer
 
     print("\n")
@@ -139,18 +208,17 @@ def reading_mode():
 
     if val == '1':
         print("\nManual trigger mode enabled")
-        my_scanner.disable_motion_sense()
+        bar_scanner.enable_manual_trigger()
     elif val == '2':
         print("\nContinuous read mode enabled")
-        my_scanner.enable_continuous_read()
+        bar_scanner.enable_continuous_read(1)
     elif val == '3':
         print("\nMotion trigger mode enabled")
-        # TODO: do i need to set a sensitivity here??
-        my_scanner.enable_motion_sense()
+        bar_scanner.enable_motion_sense()
     else:
         print("\nCommand not recognized")
 
-def symbologies():
+def symbologies(bar_scanner):
     # flush_rx()  # Clear the rx buffer to avoid line endings
 
     print("\n")
@@ -165,16 +233,16 @@ def symbologies():
 
     if val == '1':
         print("\n1D symbologies enabled")
-        my_scanner.enable_all_1D()
+        bar_scanner.enable_all_1D()
     elif val == '2':
         print("\n1D symbologies disabled")
-        my_scanner.disable_all_1D()
+        bar_scanner.disable_all_1D()
     elif val == '3':
         print("\n2D symbologies enabled")
-        my_scanner.enable_all_2D()
+        bar_scanner.enable_all_2D()
     elif val == '4':
         print("\n2D symbologies disabled")
-        my_scanner.disable_all_2D()
+        bar_scanner.disable_all_2D()
     else:
         print("\nCommand not recognized")
 
@@ -191,7 +259,7 @@ def run_example():
 
     while True:
 
-        flush_rx()  # Clear the serial rx buffer to avoid line endings
+        #flush_rx()  # Clear the serial rx buffer to avoid line endings
         
         print("\n")
         print("\nSparkFun DE2120 Barcode Scanner Python Package")
@@ -200,12 +268,15 @@ def run_example():
         print("\n2) Stop Scan")
         print("\n3) Enable/Disable Flashlight")
         print("\n4) Enable/Disable Aiming Reticle")
-        print("\n5) Set Reading Area")
-        print("\n6) Set Reading Mode")
-        print("\n7) Enable/Disable Symbologies")
+        print("\n5) Enable/Disable Decode Beep")
+        print("\n6) Enable/Disable Start Up Beep")
+        print("\n7) Change Buzzer Frequency")
+        print("\n8) Enablde/Disable Image Flipping")
+        print("\n9) Set Reading Area")
+        print("\n10) Set Reading Mode")
+        print("\n11) Enable/Disable Symbologies")
         print("\n------------------------------------------------")
 
-        # TODO: how to execute other code while waiting for user input?
         val = input("\nSelect an option number: ")
 
         if val == '1':
@@ -213,15 +284,23 @@ def run_example():
         elif val == '2':
             my_scanner.stop_scan()
         elif val == '3':
-            flashlight()
+            flash_light(my_scanner)
         elif val == '4':
-            reticle()
+            reticle(my_scanner)
         elif val == '5':
-            reading_area()
+            decode_beep(my_scanner)
         elif val == '6':
-            reading_mode()
+            boot_beep(my_scanner)
         elif val == '7':
-            symbologies()
+            change_buzz_freq(my_scanner)
+        elif val == '8':
+            image_flip(my_scanner)
+        elif val == '9':
+            reading_area(my_scanner)
+        elif val == '10':
+            reading_mode(my_scanner)
+        elif val == '11':
+            symbologies(my_scanner)
         else:
             print("\nCommand not recognized")
 

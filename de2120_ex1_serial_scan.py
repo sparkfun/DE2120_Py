@@ -61,18 +61,15 @@ def run_example():
         return
     print("\nScanner ready!")
 
-    BUFFER_LEN = 40
-    scan_buffer = [None] * BUFFER_LEN
-
+    scan_buffer = ""
+    
     while True:
-
-        if my_scanner.read_barcode(scan_buffer, BUFFER_LEN):
-            print("\nCode found: ")
-            for i in range(0, len(scan_buffer)):
-                print(scan_buffer[i])
-            print("\n")
+        scan_buffer = my_scanner.read_barcode()
+        if scan_buffer:
+            print("\nCode found: " + str(scan_buffer))
+            scan_buffer = ""
         
-        time.sleep(0.2)
+        time.sleep(0.02)
     
 if __name__ == '__main__':
     try:

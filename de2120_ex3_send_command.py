@@ -59,17 +59,6 @@ from __future__ import print_function
 import de2120_barcode_scanner
 import time
 import sys
-from threading import Thread
-
-def read_barcode(scanner, buffer, length):
-    if scanner.read_barcode(buffer, length):
-        print("\n")
-        print("\n---------------------------------------------")
-        print("\nCode found: ")
-        print("\n")
-
-        for i in range(0, len(buffer)):
-            print(buffer[i])
 
 def run_example():
 
@@ -82,28 +71,31 @@ def run_example():
         return
     print("\nScanner ready!")
 
-    BUFFER_LEN = 40
-    scan_buffer = [None] * BUFFER_LEN
+    print("\n")
+    print("\nTransmit Code ID with Barcode? (y/n)")
+    print("\n---------------------------------------------")
 
-    # Start read barcode thread
-    read_code = Thread(target = read_barcode, args=(my_scanner, scan_buffer, BUFFER_LEN), daemon = True)
-    read_code.start()
+    val = input("\nType 'y' or 'n' or scan a barcode: ")
 
+    if val == 'y':
+        print("\nCode ID will be displayed on scan")
+        my_scanner.send_command("CIDENA", "1")
+    elif val == 'n':
+        print("\nCode ID will NOT be displayed on scan")
+        my_scanner.send_command("CIDENA", "0")
+    else:
+        print("\nCommand not recognized")
+            
+    scan_buffer = ""
+    
     while True:
-        print("\n")
-        print("\nTransmit Code ID with Barcode? (y/n)")
-        print("\n---------------------------------------------")
-
-        val = input("\nType 'y' or 'n' or scan a barcode")
-
-        if val == 'y':
-            print("\nCode ID will be displayed on scan")
-            my_scanner.send_command("CIDENA", "1")
-        elif val == 'n':
-            print("\nCode ID will NOT be displayed on scan")
-            my_scanner.send_command("CIDENA", "0")
-        else:
-            print("\nCommand not recognized")
+        scan_buffer = my_scanner.read_barcode()
+        if scan_buffer:
+            print("\nCode found: ")
+            print("\n" + str(scan_buffer))
+            scan_buffer = ""
+        
+        time.sleep(0.02)
 
 
 if __name__ == '__main__':
