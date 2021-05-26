@@ -20,7 +20,7 @@ DE2120_Py
 
 </p>
 
-<img src="https://cdn.sparkfun.com/assets/parts/1/6/4/0/7/17375-SparkFun_Qwiic_PIR_-_1uA__EKMB1107112_-01.jpg"  align="right" width=300 alt="SparkFun Qwiic Button">
+<a href="https://www.sparkfun.com/products/18088"><img src="https://cdn.sparkfun.com/assets/parts/1/7/4/0/7/18088-SparkFun_2D_Barcode_Scanner-06.jpg"  align="right" width=300 alt="SparkFun 2D Barcode Scanner Breakout"></a>
 
 Python module for the [SparkFun 2D Barcode Scanner Breakout - DE2120](https://www.sparkfun.com/products/18088).
 
